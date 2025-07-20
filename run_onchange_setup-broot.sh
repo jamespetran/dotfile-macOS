@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 echo "🌳 Setting up broot (intelligent file navigation)..."
@@ -10,7 +10,7 @@ if ! command -v broot >/dev/null 2>&1; then
 fi
 
 # Initialize broot if not already done
-if [[ ! -f ~/.config/broot/launcher/bash/br ]]; then
+if [ ! -f ~/.config/broot/launcher/bash/br ]; then
   echo "🚀 Initializing broot..."
   mkdir -p ~/.config/broot/launcher/{bash,zsh}
   broot --print-shell-function bash > ~/.config/broot/launcher/bash/br

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 echo "🔍 Setting up Atuin (encrypted shell history)..."
@@ -10,7 +10,7 @@ if ! command -v atuin >/dev/null 2>&1; then
 fi
 
 # Check if atuin is already configured (has a database)
-if [[ -f ~/.local/share/atuin/history.db ]] || [[ -f ~/.config/atuin/key ]]; then
+if [ -f ~/.local/share/atuin/history.db ] || [ -f ~/.config/atuin/key ]; then
   echo "✅ Atuin already configured. Skipping setup."
   exit 0
 fi

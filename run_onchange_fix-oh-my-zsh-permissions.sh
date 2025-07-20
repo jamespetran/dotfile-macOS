@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fix Oh My Zsh permissions to prevent Powerlevel10k warnings
 # This script runs when the file changes
 
@@ -13,7 +13,11 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     
     # Fix any insecure completion directories
     if command -v compaudit >/dev/null 2>&1; then
-        compaudit | xargs -r chmod g-w,o-w || true
+        # Use platform-agnostic approach (xargs -r is GNU-specific)
+        local insecure_dirs=$(compaudit 2>/dev/null)
+        if [ -n "$insecure_dirs" ]; then
+            echo "$insecure_dirs" | xargs chmod g-w,o-w || true
+        fi
     fi
     
     echo "Oh My Zsh permissions fixed"

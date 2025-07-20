@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 echo "🔧 Setting up mise for host development..."
@@ -34,14 +34,13 @@ echo "🛠️  Installing essential Python tools..."
 
 # Use the mise-managed Python to install pipx (but without --user to avoid conflicts)
 if ! command -v pipx >/dev/null 2>&1; then
-  # Temporarily disable virtualenv requirement just for this install
-  PYTHON_BIN="$HOME/.local/share/mise/installs/python/3.11.*/bin/python"
-  PYTHON_BIN=$(echo $PYTHON_BIN | head -1)  # Handle glob expansion
+  # Find mise-managed Python in a cross-platform way
+  MISE_PYTHON=$(mise which python 2>/dev/null || true)
   
-  if [ -f "$PYTHON_BIN" ]; then
+  if [ -n "$MISE_PYTHON" ] && [ -f "$MISE_PYTHON" ]; then
     echo "Installing pipx using mise-managed Python..."
-    $PYTHON_BIN -m pip install pipx
-    $PYTHON_BIN -m pipx ensurepath
+    $MISE_PYTHON -m pip install pipx
+    $MISE_PYTHON -m pipx ensurepath
   else
     echo "⚠️  Mise-managed Python not found, using system python3..."
     python3 -m pip install --user pipx

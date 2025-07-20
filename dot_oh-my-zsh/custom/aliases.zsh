@@ -36,9 +36,6 @@ alias csize='cargo bloat --release --crates'  # Binary size analysis
 # zoxide (better cd)
 eval "$(zoxide init zsh)"
 
-# App launchers
-alias idea='/home/james/.local/share/JetBrains/Toolbox/apps/intellij-idea-ultimate/bin/idea'
-
 # Docker/Podman smart aliasing
 if command -v podman &> /dev/null && grep -q silverblue /etc/os-release 2>/dev/null; then
   alias d='podman'
@@ -67,8 +64,8 @@ alias grep='grep --color=auto'
 
 alias cls='clear && printf "\e[3J"'
 
-# Claude Code CLI
-alias claude="~/.claude/local/claude"
+# Claude Code CLI (remove alias if claude is in PATH)
+# alias claude="claude"
 
 # Zellij layouts
 alias zdev='zellij --layout dev'

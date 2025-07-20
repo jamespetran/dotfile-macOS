@@ -1,0 +1,228 @@
+# Rust Development Configuration
+# Enhanced cargo aliases and development tools
+
+# Rust environment setup
+{{- if .rust.cargoHome }}
+export CARGO_HOME="{{ .rust.cargoHome }}"
+export PATH="$CARGO_HOME/bin:$PATH"
+{{- end }}
+
+# Enable sccache for faster compilation
+{{- if .rust.enableSccache }}
+export RUSTC_WRAPPER="sccache"
+export SCCACHE_CACHE_SIZE="10G"
+{{- end }}
+
+# Cargo aliases from user configuration
+{{- range $alias, $command := .rust.cargoAliases }}
+alias {{ $alias }}='{{ $command }}'
+{{- end }}
+
+# Additional Rust development aliases
+alias ccheck='cargo check --workspace --all-targets'
+alias cdoc='cargo doc --no-deps --open'
+alias ctest='cargo test --workspace'
+alias cbench='cargo bench'
+alias cupdate='cargo update'
+alias cinstall='cargo install --path .'
+alias crelease='cargo build --release'
+alias csize='cargo bloat --release --crates'
+alias ctree='cargo tree'
+alias cfeatures='cargo tree --format "{p} {f}"'
+
+# Cargo watch shortcuts
+alias cwatch='cargo watch'
+alias cwcheck='cargo watch -x check'
+alias cwtest='cargo watch -x "test -- --nocapture"'
+alias cwnext='cargo watch -x "nextest run"'
+alias cwrun='cargo watch -x run'
+alias cwclippy='cargo watch -x "clippy -- -D warnings"'
+
+# Rust toolchain management
+alias rupdate='rustup update'
+alias rdefault='rustup default'
+alias rshow='rustup show'
+alias rtoolchain='rustup toolchain'
+alias rcomponent='rustup component'
+
+# Cross-compilation helpers
+rust_target_add() {
+  local target="${1}"
+  if [[ -z "$target" ]]; then
+    echo "Usage: rust_target_add <target-triple>"
+    echo "Example: rust_target_add wasm32-unknown-unknown"
+    return 1
+  fi
+  rustup target add "$target"
+}
+
+# Cargo extension helpers
+cargo_install_essential() {
+  echo "Installing essential cargo extensions..."
+  local tools=(
+    "cargo-nextest"    # Fast test runner
+    "cargo-watch"      # Auto-rebuild on changes
+    "cargo-edit"       # Add/remove dependencies
+    "cargo-outdated"   # Check for outdated dependencies
+    "cargo-audit"      # Security vulnerability audit
+    "cargo-bloat"      # Binary size analysis
+    "cargo-expand"     # Macro expansion
+    "cargo-flamegraph" # Performance profiling
+  )
+  
+  for tool in "${tools[@]}"; do
+    echo "Installing $tool..."
+    cargo install "$tool"
+  done
+  
+  {{- if .rust.enableSccache }}
+  echo "Installing sccache..."
+  cargo install sccache
+  {{- end }}
+}
+
+# Project templates
+rust_new() {
+  local name="${1}"
+  local template="${2:-bin}"
+  
+  if [[ -z "$name" ]]; then
+    echo "Usage: rust_new <project-name> [template]"
+    echo "Templates: bin (default), lib, workspace"
+    return 1
+  fi
+  
+  case "$template" in
+    bin)
+      cargo new "$name" --bin
+      cd "$name"
+      echo "Created binary project: $name"
+      ;;
+    lib)
+      cargo new "$name" --lib
+      cd "$name"
+      echo "Created library project: $name"
+      ;;
+    workspace)
+      mkdir "$name"
+      cd "$name"
+      cat > Cargo.toml << 'EOF'
+[workspace]
+members = []
+resolver = "2"
+
+[workspace.package]
+authors = ["Your Name <your.email@example.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/${name}"
+
+[workspace.dependencies]
+# Add shared dependencies here
+EOF
+      echo "Created workspace: $name"
+      echo "Add members to Cargo.toml to include crates"
+      ;;
+    *)
+      echo "Unknown template: $template"
+      return 1
+      ;;
+  esac
+}
+
+# Performance profiling helpers
+rust_bench() {
+  cargo bench "$@"
+}
+
+rust_flamegraph() {
+  if ! command -v cargo-flamegraph &>/dev/null; then
+    echo "Installing cargo-flamegraph..."
+    cargo install flamegraph
+  fi
+  cargo flamegraph "$@"
+}
+
+# Code quality helpers
+rust_lint() {
+  echo "Running comprehensive linting..."
+  cargo fmt --all -- --check
+  cargo clippy --workspace --all-targets --all-features -- -D warnings
+  cargo doc --no-deps --all-features
+}
+
+rust_audit() {
+  if ! command -v cargo-audit &>/dev/null; then
+    echo "Installing cargo-audit..."
+    cargo install cargo-audit
+  fi
+  cargo audit
+}
+
+# Build optimization helpers
+rust_release_build() {
+  echo "Building optimized release binary..."
+  RUSTFLAGS="-C target-cpu=native" cargo build --release
+  echo "Binary location: target/release/"
+  ls -lh target/release/ | grep -E '^-rwx'
+}
+
+# Cache statistics
+{{- if .rust.enableSccache }}
+rust_cache_stats() {
+  echo "Sccache statistics:"
+  sccache --show-stats
+}
+
+rust_cache_clear() {
+  echo "Clearing sccache..."
+  sccache --stop-server
+  rm -rf "$(sccache --show-stats | grep 'Cache location' | cut -d: -f2 | xargs)"
+  echo "Sccache cleared"
+}
+{{- end }}
+
+# Platform-specific Rust configuration
+{{- if eq .chezmoi.os "darwin" }}
+# macOS-specific Rust settings
+export CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER="clang"
+export CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER="clang"
+
+# Use native CPU features for better performance
+export RUSTFLAGS="-C target-cpu=native"
+{{- else if eq .chezmoi.os "linux" }}
+# Linux-specific Rust settings
+# Use lld linker for faster linking if available
+if command -v lld &>/dev/null; then
+  export RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+fi
+{{- end }}
+
+# Rust development tips
+rust_tips() {
+  echo "Rust Development Tips:"
+  echo ""
+  echo "Quick commands:"
+  echo "• ct    - Run tests with cargo-nextest (fast)"
+  echo "• cb    - Build all workspace targets"
+  echo "• cc    - Run clippy with all features"
+  echo "• cf    - Fix code with rustfmt"
+  echo "• cw    - Watch for changes and rebuild"
+  echo ""
+  echo "Project management:"
+  echo "• rust_new <name> [bin|lib|workspace] - Create new project"
+  echo "• cargo_install_essential - Install recommended tools"
+  echo "• rust_lint - Run all linters"
+  echo "• rust_audit - Check for security vulnerabilities"
+  echo ""
+  {{- if .rust.enableSccache }}
+  echo "Build caching:"
+  echo "• rust_cache_stats - Show sccache statistics"
+  echo "• rust_cache_clear - Clear build cache"
+  echo ""
+  {{- end }}
+  echo "Performance:"
+  echo "• rust_bench - Run benchmarks"
+  echo "• rust_flamegraph - Generate flame graph"
+  echo "• rust_release_build - Build with native optimizations"
+}

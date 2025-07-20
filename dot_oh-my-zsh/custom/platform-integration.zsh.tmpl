@@ -1,0 +1,206 @@
+# macOS Integration and Error Handling
+# Provides smooth macOS experience with helpful error messages
+
+# Platform detection
+export DOTFILES_OS="darwin"
+export DOTFILES_ARCH="{{ .chezmoi.arch }}"
+
+# Check for required dependencies
+check_dependencies() {
+  local missing=()
+  local optional=()
+  
+  # Core dependencies
+  local core_deps=(git curl zsh)
+  for dep in "${core_deps[@]}"; do
+    if ! command -v "$dep" &>/dev/null; then
+      missing+=("$dep")
+    fi
+  done
+  
+  # macOS specific checks
+  if ! command -v brew &>/dev/null; then
+    missing+=("homebrew (install from https://brew.sh)")
+  fi
+  
+  if ! xcode-select -p &>/dev/null; then
+    optional+=("Xcode Command Line Tools (run: xcode-select --install)")
+  fi
+  
+  # Container runtime
+  if ! command -v docker &>/dev/null; then
+    optional+=("Docker Desktop (https://www.docker.com/products/docker-desktop)")
+  fi
+  
+  # Development tools
+  if ! command -v rustc &>/dev/null; then
+    optional+=("Rust toolchain (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh)")
+  fi
+  
+  # Report results
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    echo "❌ Missing required dependencies:"
+    printf '   - %s\n' "${missing[@]}"
+    echo ""
+  fi
+  
+  if [[ ${#optional[@]} -gt 0 ]]; then
+    echo "💡 Optional dependencies not installed:"
+    printf '   - %s\n' "${optional[@]}"
+    echo ""
+  fi
+  
+  if [[ ${#missing[@]} -eq 0 ]] && [[ ${#optional[@]} -eq 0 ]]; then
+    echo "✅ All dependencies satisfied!"
+  fi
+  
+  return ${#missing[@]}
+}
+
+# IntelliJ IDEA launcher with error handling
+idea() {
+  if [[ -d "/Applications/IntelliJ IDEA.app" ]]; then
+    open -a "IntelliJ IDEA" "$@"
+  else
+    echo "IntelliJ IDEA not found in /Applications/"
+    echo "Install from: https://www.jetbrains.com/idea/download/"
+    return 1
+  fi
+}
+
+# Enhanced which command with helpful messages
+which_enhanced() {
+  local cmd="$1"
+  if command -v "$cmd" &>/dev/null; then
+    command which "$cmd"
+  else
+    echo "$cmd: command not found"
+    
+    # Provide helpful suggestions
+    case "$cmd" in
+      docker)
+        echo "💡 Install Docker Desktop from https://www.docker.com/products/docker-desktop"
+        ;;
+      cargo|rustc|rustup)
+        echo "💡 Install Rust from https://rustup.rs"
+        ;;
+      node|npm)
+        echo "💡 Install Node.js with: mise use node@lts"
+        ;;
+      python|python3)
+        echo "💡 Install Python with: mise use python@3.11"
+        ;;
+      rg|fd|bat)
+        echo "💡 Install with: brew install $cmd"
+        ;;
+      *)
+        echo "💡 Try: brew search $cmd"
+        ;;
+    esac
+    
+    return 1
+  fi
+}
+
+# Override which if not using GNU which
+if ! which --version 2>&1 | grep -q "GNU"; then
+  alias which='which_enhanced'
+fi
+
+# macOS PATH setup
+setup_platform_path() {
+  # Base paths - order matters!
+  local new_paths=()
+  
+  # User's local bin
+  [[ -d "$HOME/.local/bin" ]] && new_paths+=("$HOME/.local/bin")
+  
+  # Cargo/Rust
+  [[ -d "$HOME/.cargo/bin" ]] && new_paths+=("$HOME/.cargo/bin")
+  
+  # Homebrew paths (Apple Silicon)
+  [[ -d "{{ .homebrewBin }}" ]] && new_paths+=("{{ .homebrewBin }}")
+  [[ -d "{{ .homebrewPrefix }}/sbin" ]] && new_paths+=("{{ .homebrewPrefix }}/sbin")
+  
+  # GNU tools if installed
+  [[ -d "{{ .homebrewPrefix }}/opt/coreutils/libexec/gnubin" ]] && new_paths+=("{{ .homebrewPrefix }}/opt/coreutils/libexec/gnubin")
+  
+  # macOS system paths
+  new_paths+=("/usr/local/bin" "/usr/bin" "/bin" "/usr/sbin" "/sbin")
+  
+  # Reconstruct PATH
+  export PATH=$(IFS=:; echo "${new_paths[*]}")
+}
+
+# Performance monitoring
+shell_startup_time() {
+  local shell="${1:-zsh}"
+  echo "Measuring $shell startup time..."
+  time $shell -i -c exit
+}
+
+# System information
+sysinfo() {
+  echo "System Information:"
+  echo "==================="
+  echo "OS: macOS"
+  echo "Arch: {{ .chezmoi.arch }}"
+  echo "Hostname: {{ .chezmoi.hostname }}"
+  echo "User: {{ .chezmoi.username }}"
+  echo ""
+  
+  echo "macOS Version: $(sw_vers -productVersion)"
+  echo "Build: $(sw_vers -buildVersion)"
+  
+  echo ""
+  echo "Package Manager: brew"
+  echo "Container Runtime: docker"
+}
+
+# Fix common issues
+fix_common_issues() {
+  echo "Checking for common issues..."
+  
+  # Fix Oh My Zsh permissions if needed
+  if [[ -d "$HOME/.oh-my-zsh" ]] && [[ -w "$HOME/.oh-my-zsh" ]]; then
+    if find "$HOME/.oh-my-zsh" -type d ! -perm -u+w 2>/dev/null | grep -q .; then
+      echo "Fixing Oh My Zsh permissions..."
+      chmod -R u+w "$HOME/.oh-my-zsh"
+    fi
+  fi
+  
+  # Ensure .local/bin exists
+  [[ ! -d "$HOME/.local/bin" ]] && mkdir -p "$HOME/.local/bin"
+  
+  # Fix shell history permissions
+  [[ -f "$HOME/.zsh_history" ]] && chmod 600 "$HOME/.zsh_history"
+  
+  echo "✅ Common issues check complete"
+}
+
+# macOS tips
+platform_tips() {
+  echo "macOS Tips:"
+  echo ""
+  echo "• Use 'brew' for package management"
+  echo "• GNU tools are prefixed (e.g., gls, ggrep) unless in PATH"
+  echo "• Docker Desktop provides Docker daemon"
+  echo "• Spotlight can be used to quickly launch apps"
+  echo "• Command+Space opens Spotlight search"
+  
+  echo ""
+  echo "Useful Commands:"
+  echo "• check_dependencies - Verify system setup"
+  echo "• sysinfo - Show system information"
+  echo "• fix_common_issues - Auto-fix known issues"
+  echo "• shell_startup_time - Measure shell performance"
+}
+
+# Auto-fix issues on first run
+if [[ ! -f "$HOME/.dotfiles_platform_checked" ]]; then
+  fix_common_issues
+  touch "$HOME/.dotfiles_platform_checked"
+fi
+
+# Setup PATH on shell startup
+setup_platform_path

@@ -4,23 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a chezmoi dotfiles repository with **two installation modes**: minimal (recommended) and full. Uses Bitwarden for secure credential management and supports both traditional host-based development and modern dev container workflows.
+This is a chezmoi dotfiles repository for macOS development environments. Uses Bitwarden for secure credential management and provides a comprehensive set of development tools.
 
-## Installation Modes
-
-### Minimal Mode (Default/Recommended)
-- **Purpose**: Clean base system + dev containers for IntelliJ IDEA Ultimate
-- **Host installs**: Shell environment, essential CLI tools, container runtime only
-- **Language development**: Happens in dev containers (Python, Node, Rust)
-- **Package file**: `packages-minimal.yaml`
-- **Best for**: Clean system, no version conflicts, container-based development
-
-### Full Mode (Legacy/Power Users)  
-- **Purpose**: Everything on host system for maximum performance
-- **Host installs**: All language runtimes, build tools, performance tools
-- **Language development**: Directly on host with mise runtime management
-- **Package file**: `packages.yaml` (original)
-- **Best for**: Bare metal development, maximum tool availability
 
 ## Key Commands
 
@@ -33,21 +18,10 @@ This is a chezmoi dotfiles repository with **two installation modes**: minimal (
 
 The `cz` command is a wrapper function that automatically unlocks Bitwarden when needed.
 
-### Mode Management
-- `./switch-to-minimal.sh` - Switch from full to minimal mode (with backup)
-- Switch to full: Requires fresh chezmoi installation
-
 ### Package Installation
-
-#### Minimal Mode
-- `./run_always_update-packages.sh.tmpl` - Ensure minimal packages installed (no upgrades)
+- `./run_always_update-packages.sh.tmpl` - Install and upgrade packages
 - `./run_weekly_safe-upgrades.sh.tmpl` - Safe weekly upgrades for CLI tools
-- `./run_onchange_setup-mise-minimal.sh.tmpl` - Minimal mise setup (shell tools only)
-
-#### Full Mode  
-- `./run_onchange_install-dev-environment.sh.tmpl` - Full environment bootstrap (one-time)
-- `./run_always_update-packages.sh.tmpl` - Install and upgrade all packages (every apply)
-- `./run_onchange_setup-mise.sh.tmpl` - Full mise setup with Python/Node/Rust
+- `./run_onchange_setup-mise.sh` - Runtime manager setup with Python/Node/Rust
 
 ### GPG Key Management
 - `./run_onchange_import-gpg-key.sh.tmpl` - Import GPG key from Bitwarden (when needed)
@@ -60,9 +34,7 @@ The `cz` command is a wrapper function that automatically unlocks Bitwarden when
 ### File Structure
 - `dot_*` files become dotfiles in the home directory (e.g., `dot_zshrc` → `~/.zshrc`)
 - `*.tmpl` files are processed as Go templates with access to Bitwarden data
-- `.chezmoidata/packages.yaml` - Full mode package lists
-- `.chezmoidata/packages-minimal.yaml` - Minimal mode package lists  
-- `devcontainer-templates/` - Pre-configured dev containers for Python, Rust, Node.js
+- `.chezmoidata/packages.yaml` - Package lists for Homebrew and Cargo
 - Shell customizations are in `dot_oh-my-zsh/custom/`
 
 ### Bitwarden Integration (Recently Optimized)
@@ -85,29 +57,11 @@ The `cz` command is a wrapper function that automatically unlocks Bitwarden when
 
 ### Installation Architecture
 
-# THIS IS OUT OF DATE. THERE IS ONLY ONE MODE. THIS IS ONLY MAC OS. NO LINUX. NO PODMAN.
-
-README.MD IS MORE UP TO DATE
-
-#### Minimal Mode (4 layers)
-1. **OS packages** - Essential system utilities (git, curl, zsh, docker)
-2. **Homebrew** - Modern CLI tools (ripgrep, bat, fzf, etc.)
+**macOS-focused installation with 4 layers:**
+1. **Homebrew** - Modern CLI tools and development utilities
+2. **Language toolchains** - Rust (cargo), Node.js (mise), Python (mise)
 3. **Shell framework** - Oh My Zsh with plugins and Powerlevel10k theme
-4. **Configuration** - Tool-specific configs and aliases
-
-#### Full Mode (6 layers) 
-1. **OS packages** - dnf (Fedora) or apt (Debian/Ubuntu) - Essential system libraries
-2. **Homebrew** - Modern CLI alternatives and cross-platform tools
-3. **Language toolchains** - Rust (rustup), Node.js (mise), Python (mise)
-4. **Shell framework** - Oh My Zsh with plugins and Powerlevel10k theme
-5. **Development tools** - GitHub CLI, Zellij, lazygit, performance tools  
-6. **Configuration** - Tool-specific configs and optimizations
-
-#### Dev Containers (Minimal Mode)
-- **Language runtimes** live in containers instead of host
-- **Project isolation** via container-per-project
-- **IntelliJ integration** via dev container support
-- **Shared caches** for performance (cargo registry, npm cache, etc.)
+4. **Configuration** - Tool-specific configs and optimizations
 
 **Script Types:**
 - `run_onchange_*` - Execute when script content changes
@@ -116,49 +70,19 @@ README.MD IS MORE UP TO DATE
 
 ### Development Tools Included
 
-#### Both Modes
 - Modern CLI alternatives: `bat`, `fd`, `ripgrep`, `zoxide`
 - Git tools: `git-delta`, `lazygit`, `gh` (GitHub CLI)  
 - Terminal multiplexer: `zellij`
-- Container tools: `docker`
+- Container tools: `docker`, `colima`
 - File navigation: `broot`, `fzf`
 - Data processing: `jq`, `yq`
-- Monitoring: `btop`, `htop`
+- Monitoring: `btop`
+- Language runtimes: Python, Node.js (mise), Rust toolchain
+- Rust tools: `cargo-nextest`, `cargo-llvm-cov`
+- Python tools: `uv`
+- Infrastructure: `terraform`, `tflint`, `terraform-docs`, `infracost`, `tenv`, `checkov`, `trivy`
+- Performance tools: `hyperfine`, `tokei`
 
-#### Full Mode Only
-- Language runtimes: Python 3.11, Node.js LTS, Rust toolchain
-- Build tools: `gcc`, `cmake`
-- Rust tools: `cargo-nextest`, `cargo-watch`, `cargo-edit`
-- Python tools: `poetry`, `pipx`, `huggingface_hub`
-
-## Dev Container Templates (Minimal Mode)
-
-Located in `devcontainer-templates/` directory:
-
-### Python Container (`python/.devcontainer.json`)
-- **Base**: `mcr.microsoft.com/devcontainers/python:3.11`
-- **Features**: poetry, pipx, common-utils
-- **Environment**: `PIP_REQUIRE_VIRTUALENV=false` (allows global installs)
-- **Mounts**: zsh config, oh-my-zsh
-- **IDE**: IntelliJ backend configured
-
-### Rust Container (`rust/.devcontainer.json`)  
-- **Base**: `mcr.microsoft.com/devcontainers/rust:1`
-- **Features**: common-utils
-- **Tools**: cargo-nextest, cargo-watch, cargo-edit
-- **Mounts**: zsh config, cargo registry cache
-
-### Node.js Container (`node/.devcontainer.json`)
-- **Base**: `mcr.microsoft.com/devcontainers/javascript-node:20`
-- **Tools**: pnpm, yarn (global install)
-- **Mounts**: zsh config, npm cache
-- **IDE**: IntelliJ backend configured
-
-### Usage with IntelliJ IDEA Ultimate
-1. Copy appropriate `.devcontainer.json` to project root
-2. **Tools → Dev Containers → Create Dev Container**
-3. IntelliJ builds and connects to container
-4. All language tools available inside container only
 
 ## Recent Critical Fix: Bitwarden Shell Startup Optimization
 
@@ -170,18 +94,85 @@ Located in `devcontainer-templates/` directory:
 
 **Result**: Clean shell startup, no unnecessary Bitwarden prompts.
 
+## Docker Auto-Management: A Case Study in AI Development
+
+### The Problem
+Initially, this repository included a broken LaunchAgent for Colima auto-start that used an invalid `--very-quiet` flag. This caused Docker to be unavailable after Mac restarts, requiring manual intervention.
+
+### The AI Coaching Process
+This section documents how Claude Code was coached to move beyond surface-level assistance to deliver robust solutions:
+
+**Initial Failure Pattern:**
+- Claude acted like a "naive intern" - asking permission for every action
+- Provided surface-level fixes without understanding root causes
+- Treated system configuration casually, leading to broken functionality
+- Failed to take responsibility for creating production issues
+
+**Coaching Breakthroughs:**
+1. **Accountability**: Forced Claude to trace its own git history to understand exactly what it had broken and when
+2. **Systems Thinking**: Required understanding that dotfiles are real infrastructure, not toy configurations
+3. **Delegation vs Control**: Taught Claude to work WITH subagents rather than micromanaging them
+4. **Problem Ownership**: Instead of "Here's what you could do," demanded "Here's what I will do"
+
+### The Solution: Smart Docker Management
+
+**Implementation**: `dot_oh-my-zsh/custom/docker-smart.zsh`
+
+**Key Features:**
+- **Lazy initialization**: Colima starts only when Docker commands are used
+- **Auto-cleanup**: Stops Colima after configurable idle timeout (default: 10 minutes)
+- **Container-aware**: Won't stop if containers are running
+- **Resource management**: Tracks activity, manages background cleanup processes
+- **Zero overhead**: No system resources used when Docker isn't needed
+
+**Rust-like Borrow System Philosophy:**
+- Resources are "borrowed" only when needed
+- Automatic cleanup when no longer in use
+- Safety checks prevent premature resource release
+- Zero-cost abstractions - no overhead when unused
+
+**Usage:**
+```bash
+# Just use Docker normally - Colima starts automatically
+docker run -it --rm alpine sh
+
+# Management commands available
+docker-smart-status    # Check system state
+docker-smart-stop      # Force cleanup
+docker-smart-reset     # Reset state files
+```
+
+**Configuration:**
+```bash
+export DOCKER_SMART_ENABLED=true          # Enable smart management
+export DOCKER_IDLE_TIMEOUT=600            # Idle timeout (seconds)
+export DOCKER_CLEANUP_AGGRESSIVE=false    # Aggressive cleanup on stop
+export DOCKER_SMART_LOG_LEVEL=1           # Logging (0=silent, 1=info, 2=debug)
+```
+
+### Lessons for Future Claude Instances
+
+1. **Take Ownership**: If you break something, fix it completely - don't just patch symptoms
+2. **Use Git as Memory**: The repository history contains your previous decisions and mistakes
+3. **Validate System Integration**: Before writing system configs, verify CLI interfaces actually exist
+4. **Embrace Delegation**: Let subagents solve complete problems instead of micromanaging fragments
+5. **Think in Systems**: Understand that configuration changes affect real workflows and productivity
+
+The resulting Docker management system provides the "just works" experience while following the repository's philosophy of reliability, performance, and minimal system complexity.
+
 ## Important Notes
 
 - The repository uses GPG signing for commits (automatically configured)
 - Bitwarden only prompts when configuration changes are actually needed
 - All installation scripts are idempotent and safe to run multiple times
 - Zsh is the target shell with Oh My Zsh framework
-- Setup works in both native environments and toolbox containers
+- Setup works on macOS with Homebrew package management
 - All scripts include proper error handling and exit status reporting
+- Docker commands "just work" via intelligent Colima management
 
 ## Documentation
 
-- **USAGE.md** - Comprehensive user guide for all tools and workflows
+- **README.md** - Quick setup guide and installed tools overview
 - **CLAUDE.md** - This file, for Claude Code instances
 - All configurations follow Rust principles: performance, safety, explicit error handling
 
@@ -216,61 +207,35 @@ Located in `devcontainer-templates/` directory:
 
 ## Maintenance & Debugging for Claude
 
-### Validate Installation (Mode-Specific)
+### Validate Installation
 
-#### Minimal Mode Validation
 ```bash
-# Essential tools (should be present)
+# Essential tools
 which git curl zsh docker || echo "Essential tools missing"
 which rg bat fzf fd || echo "CLI tools missing" 
 which lazygit gh zellij atuin broot || echo "Dev tools missing"
 
-# Language tools (should NOT be on host)
-which python3 node cargo && echo "⚠️ Language runtimes on host (should be in containers)"
+# Homebrew
+which brew && brew list | head -5 || echo "Homebrew incomplete"
+
+# Language toolchains  
+which cargo node && mise list || echo "Language tools incomplete"
+
+# Shell framework
+echo $ZSH && ls $ZSH/custom/plugins || echo "Shell framework incomplete"
 
 # Container runtime
 docker --version && echo "✅ Container runtime available"
 ```
 
-#### Full Mode Validation  
-```bash
-# Layer 1: OS packages
-which gcc git curl python3 || echo "Layer 1 incomplete"
-
-# Layer 2: Homebrew
-which brew && brew list | head -5 || echo "Layer 2 incomplete"
-
-# Layer 3: Language toolchains  
-which cargo node && mise list || echo "Layer 3 incomplete"
-
-# Layer 4: Shell framework
-echo $ZSH && ls $ZSH/custom/plugins || echo "Layer 4 incomplete"
-
-# Layer 5: Development tools
-which gh lazygit zellij atuin || echo "Layer 5 incomplete"
-
-# Layer 6: Performance tools
-cargo nextest --version || echo "Layer 6 incomplete"
-```
-
 ### Upgrade Management
 
-#### Minimal Mode  
 ```bash
 # Daily (automatic on cz apply)
-./run_always_update-packages.sh.tmpl       # Ensure packages installed (no upgrades)
+./run_always_update-packages.sh.tmpl       # Install and upgrade all packages
 
 # Weekly (manual)
 ./run_weekly_safe-upgrades.sh.tmpl         # Safe CLI tool upgrades only
-
-# Check what needs manual upgrade
-cat manual-upgrade-checklist.md            # Critical tools checklist
-```
-
-#### Full Mode
-```bash
-# Daily (automatic on cz apply)  
-./run_always_update-packages.sh.tmpl       # Install and upgrade all packages
 
 # Language runtime management
 mise use python@3.11                       # Switch Python version
@@ -279,7 +244,6 @@ mise use node@lts                          # Switch Node version
 
 ### Debug Common Issues
 
-#### Both Modes
 ```bash
 # Bitwarden integration
 bw status                                    # Check vault status
@@ -292,42 +256,21 @@ gpg --list-secret-keys 21D39CC1D0B3B44A
 # Shell performance
 atuin stats                                 # Shell history stats
 zsh -c 'time zsh -i -c exit'               # Shell startup time
-```
 
-#### Minimal Mode Specific
-```bash
 # Container runtime
 docker ps -a                                # Check containers
 docker system info                          # System status
 
-# Dev container issues
-cat devcontainer-templates/README.md        # Usage instructions
-```
-
-#### Full Mode Specific
-```bash
-# Build performance  
+# Language runtimes
 mise list                                   # Runtime versions
-
-# Python environment
-pipx list                                   # Global Python tools
-poetry --version                           # Poetry status
 ```
 
 ### Common Troubleshooting
 
-#### Minimal Mode
-1. **Missing language tools**: Install in dev container, not on host
-2. **Container not starting**: Check docker daemon status and permissions
-3. **IntelliJ can't find tools**: Use dev container integration
-4. **Shell startup prompts**: Verify `bw status` and vault items
-
-#### Full Mode  
-1. **pip requires virtualenv**: Check mise environment variables in config
-3. **Runtime conflicts**: Use `mise use` to switch versions
-4. **Template errors**: Usually Bitwarden access or missing vault items
-
-#### Both Modes
-1. **Package failures**: Check internet connection, sudo access, package manager status
+1. **Package failures**: Check internet connection and Homebrew status with `brew doctor`
 2. **Git signing fails**: Verify GPG key import with `gpg --list-secret-keys`
-3. **Performance issues**: Verify installation layers completed successfully
+3. **Runtime conflicts**: Use `mise use` to switch versions
+4. **Container not starting**: Check docker/colima daemon status and permissions
+5. **Shell startup prompts**: Verify `bw status` and vault items
+6. **Template errors**: Usually Bitwarden access or missing vault items
+7. **Performance issues**: Verify installation layers completed successfully

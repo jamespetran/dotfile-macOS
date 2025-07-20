@@ -1,0 +1,36 @@
+# Colima configuration for seamless Docker development
+# Optimized for macOS with Apple Silicon
+
+# VM configuration
+cpu: 4
+memory: 8
+disk: 100
+
+# VM type - prefer VZ for better performance on Apple Silicon
+vmType: vz
+rosetta: true
+
+# Network configuration
+network:
+  address: true
+  dns: 
+    - 1.1.1.1
+    - 8.8.8.8
+
+# Docker configuration
+docker:
+  features:
+    buildkit: true
+
+# Mount configuration for better performance
+mounts:
+  - location: ~
+    writable: true
+  - location: /tmp/colima
+    writable: true
+
+# Forward agent for SSH keys
+forwardAgent: true
+
+# Auto-start handled by LaunchAgent
+autoActivate: false

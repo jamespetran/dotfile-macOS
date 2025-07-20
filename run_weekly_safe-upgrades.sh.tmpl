@@ -47,6 +47,23 @@ if [ -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
   run_with_spinner "Update Powerlevel10k theme" git -C "$ZSH_CUSTOM/themes/powerlevel10k" pull
 fi
 
-echo "✅ Safe upgrades complete!"
-echo "💡 Manual upgrade needed for: podman, zellij, lazygit, gh, broot"
-echo "🐳 Language runtimes upgrade in dev containers only"
+############################################
+# Language runtime upgrades (host-based)
+############################################
+if command -v mise >/dev/null 2>&1; then
+  run_with_spinner "Update mise plugins" mise plugins update
+  run_with_spinner "Upgrade language runtimes" mise upgrade
+fi
+
+############################################
+# Auto-upgrade additional tools
+############################################
+# These are safe to auto-upgrade via Homebrew
+if command -v brew >/dev/null 2>&1; then
+  run_with_spinner "Upgrade zellij" brew upgrade zellij || true
+  run_with_spinner "Upgrade lazygit" brew upgrade lazygit || true
+  run_with_spinner "Upgrade gh" brew upgrade gh || true
+  run_with_spinner "Upgrade broot" brew upgrade broot || true
+fi
+
+echo "✅ All safe upgrades complete!"

@@ -127,7 +127,7 @@ README.MD IS MORE UP TO DATE
 
 #### Full Mode Only
 - Language runtimes: Python 3.11, Node.js LTS, Rust toolchain
-- Build tools: `gcc`, `cmake`, `sccache`
+- Build tools: `gcc`, `cmake`
 - Rust tools: `cargo-nextest`, `cargo-watch`, `cargo-edit`
 - Python tools: `poetry`, `pipx`, `huggingface_hub`
 
@@ -144,10 +144,9 @@ Located in `devcontainer-templates/` directory:
 
 ### Rust Container (`rust/.devcontainer.json`)  
 - **Base**: `mcr.microsoft.com/devcontainers/rust:1`
-- **Features**: sccache, common-utils
+- **Features**: common-utils
 - **Tools**: cargo-nextest, cargo-watch, cargo-edit
 - **Mounts**: zsh config, cargo registry cache
-- **Performance**: `RUSTC_WRAPPER=sccache`
 
 ### Node.js Container (`node/.devcontainer.json`)
 - **Base**: `mcr.microsoft.com/devcontainers/javascript-node:20`
@@ -202,7 +201,6 @@ Located in `devcontainer-templates/` directory:
 
 **Phase 3: System Intelligence**
 - cargo-nextest: Blazing-fast Rust testing
-- sccache: Distributed compilation caching
 - Dataset analysis: Smart tools for AI/ML data work (dv, dstats, dfind, dcheck)
 - Notification system: Smart background task management
 - Intelligent file navigation: broot with development-optimized configuration
@@ -210,7 +208,7 @@ Located in `devcontainer-templates/` directory:
 **Design Philosophy:**
 - **Performance First**: Modern Rust-based tools throughout the stack
 - **Dual Interface**: Non-interactive (cat, ls) for speed, interactive (bcat, br) for exploration  
-- **Smart Caching**: sccache for builds, shell completion caching, encrypted history
+- **Smart Caching**: Shell completion caching, encrypted history
 - **Secure by Default**: GPG signing, Bitwarden credentials, encrypted shell history
 - **Zero-Cost Abstractions**: Only install and configure what's actively used
 - **Idempotent Operations**: All scripts safe to run multiple times
@@ -252,7 +250,7 @@ echo $ZSH && ls $ZSH/custom/plugins || echo "Layer 4 incomplete"
 which gh lazygit zellij atuin || echo "Layer 5 incomplete"
 
 # Layer 6: Performance tools
-sccache --show-stats && cargo nextest --version || echo "Layer 6 incomplete"
+cargo nextest --version || echo "Layer 6 incomplete"
 ```
 
 ### Upgrade Management
@@ -309,7 +307,6 @@ cat devcontainer-templates/README.md        # Usage instructions
 #### Full Mode Specific
 ```bash
 # Build performance  
-sccache --show-stats                        # Build cache hit rate
 mise list                                   # Runtime versions
 
 # Python environment
@@ -327,7 +324,6 @@ poetry --version                           # Poetry status
 
 #### Full Mode  
 1. **pip requires virtualenv**: Check mise environment variables in config
-2. **Build cache not working**: Check `sccache --show-stats`
 3. **Runtime conflicts**: Use `mise use` to switch versions
 4. **Template errors**: Usually Bitwarden access or missing vault items
 

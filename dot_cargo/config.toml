@@ -1,5 +1,4 @@
 # Cargo configuration optimized for local development
-# Note: sccache disabled for local dev (designed for build servers)
 
 [build]
 # Use all available CPU cores for parallel builds (default behavior)

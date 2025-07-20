@@ -7,11 +7,6 @@ export CARGO_HOME="{{ .rust.cargoHome }}"
 export PATH="$CARGO_HOME/bin:$PATH"
 {{- end }}
 
-# Enable sccache for faster compilation
-{{- if .rust.enableSccache }}
-export RUSTC_WRAPPER="sccache"
-export SCCACHE_CACHE_SIZE="10G"
-{{- end }}
 
 # Cargo aliases from user configuration
 {{- range $alias, $command := .rust.cargoAliases }}
@@ -75,10 +70,6 @@ cargo_install_essential() {
     cargo install "$tool"
   done
   
-  {{- if .rust.enableSccache }}
-  echo "Installing sccache..."
-  cargo install sccache
-  {{- end }}
 }
 
 # Project templates
@@ -151,20 +142,6 @@ rust_release_build() {
   ls -lh target/release/ | grep -E '^-rwx'
 }
 
-# Cache statistics
-{{- if .rust.enableSccache }}
-rust_cache_stats() {
-  echo "Sccache statistics:"
-  sccache --show-stats
-}
-
-rust_cache_clear() {
-  echo "Clearing sccache..."
-  sccache --stop-server
-  rm -rf "$(sccache --show-stats | grep 'Cache location' | cut -d: -f2 | xargs)"
-  echo "Sccache cleared"
-}
-{{- end }}
 
 # Platform-specific Rust configuration
 {{- if eq .chezmoi.os "darwin" }}
@@ -199,12 +176,6 @@ rust_tips() {
   echo "• rust_lint - Run all linters"
   echo "• rust_audit - Check for security vulnerabilities"
   echo ""
-  {{- if .rust.enableSccache }}
-  echo "Build caching:"
-  echo "• rust_cache_stats - Show sccache statistics"
-  echo "• rust_cache_clear - Clear build cache"
-  echo ""
-  {{- end }}
   echo "Performance:"
   echo "• rust_bench - Run benchmarks"
   echo "• rust_flamegraph - Generate flame graph"

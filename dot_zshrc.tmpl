@@ -86,11 +86,6 @@ fi
 
 # Rust development environment (rustup-managed)
 export PATH="{{ .rust.cargoHome }}/bin:$PATH"
-{{- if .rust.enableSccache }}
-if command -v sccache >/dev/null 2>&1; then
-  export RUSTC_WRAPPER="$(which sccache)"
-fi
-{{- end }}
 
 # direnv (automatic environment switching)
 if command -v direnv >/dev/null 2>&1; then

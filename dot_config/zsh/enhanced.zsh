@@ -141,7 +141,6 @@ fkill() {
 }
 
 # Rust local development optimizations
-# Note: sccache disabled for local dev (it's for build servers)
 export CARGO_INCREMENTAL=1
 export RUST_BACKTRACE=1
 

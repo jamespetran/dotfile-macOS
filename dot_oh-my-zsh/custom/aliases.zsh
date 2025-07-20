@@ -31,7 +31,6 @@ alias cff='cargo fmt' # Format and fix code
 alias cw='cargo watch -x check'
 alias cn='cargo nextest run'  # Explicit nextest
 alias cnw='cargo watch -x "nextest run"'  # Watch with nextest
-alias cstats='sccache --show-stats'  # Cache statistics
 alias csize='cargo bloat --release --crates'  # Binary size analysis
 
 # zoxide (better cd)

@@ -1,0 +1,17 @@
+[profile.default]
+# Run tests with maximum parallelism
+test-threads = "num-cpus"
+
+# Faster failure reporting
+fail-fast = false
+failure-output = "immediate-final"
+success-output = "never"
+
+# Show slow tests
+slow-timeout = { period = "30s", terminate-after = 3 }
+
+[profile.ci]
+# CI-optimized settings
+fail-fast = true
+retries = 2
+test-threads = "num-cpus"

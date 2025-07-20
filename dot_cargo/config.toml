@@ -4,9 +4,11 @@
 [build]
 # Use all available CPU cores for parallel builds (default behavior)
 
-[target.x86_64-unknown-linux-gnu]
-linker = "gcc"
-rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+[target.x86_64-apple-darwin]
+linker = "clang"
+
+[target.aarch64-apple-darwin]
+linker = "clang"
 
 [profile.dev]
 # Optimized for fast local development cycles

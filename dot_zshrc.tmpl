@@ -15,22 +15,9 @@ export ZSH="$HOME/.oh-my-zsh"
 
 # Disable Oh My Zsh insecure directory warnings
 export ZSH_DISABLE_COMPFIX=true
-# Homebrew path
+# Homebrew path (system tools)
 export PATH="{{ .homebrewBin }}:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-
-# Rust development environment
-export PATH="{{ .rust.cargoHome }}/bin:$PATH"
-{{- if .rust.enableSccache }}
-if command -v sccache >/dev/null 2>&1; then
-  export RUSTC_WRAPPER="$(which sccache)"
-fi
-{{- end }}
-
-# Rust cargo aliases
-{{- range $alias, $command := .rust.cargoAliases }}
-alias {{ $alias }}="{{ $command }}"
-{{- end }}
 
 # IntelliJ IDEA command line tools (macOS)
 export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
@@ -92,10 +79,18 @@ fi
 # Load enhanced zsh configuration
 [[ -f ~/.config/zsh/enhanced.zsh ]] && source ~/.config/zsh/enhanced.zsh
 
-# mise (universal runtime manager)
+# mise (universal runtime manager for Python/Node)
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
+
+# Rust development environment (rustup-managed)
+export PATH="{{ .rust.cargoHome }}/bin:$PATH"
+{{- if .rust.enableSccache }}
+if command -v sccache >/dev/null 2>&1; then
+  export RUSTC_WRAPPER="$(which sccache)"
+fi
+{{- end }}
 
 # direnv (automatic environment switching)
 if command -v direnv >/dev/null 2>&1; then

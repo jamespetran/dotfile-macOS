@@ -25,8 +25,9 @@ alias cb='cargo build'
 alias cr='cargo run'
 alias ct='cargo nextest run'  # Blazing fast tests
 alias ctc='cargo test'        # Traditional cargo test if needed
-alias cl='cargo clippy'
-alias cf='cargo fmt'
+alias cl='cargo clippy -- -D warnings' # Strict and opinionated clippy
+alias cfc='cargo fmt -- --check'
+alias cff='cargo fmt' # Format and fix code
 alias cw='cargo watch -x check'
 alias cn='cargo nextest run'  # Explicit nextest
 alias cnw='cargo watch -x "nextest run"'  # Watch with nextest
@@ -36,18 +37,11 @@ alias csize='cargo bloat --release --crates'  # Binary size analysis
 # zoxide (better cd)
 eval "$(zoxide init zsh)"
 
-# Docker/Podman smart aliasing
-if command -v podman &> /dev/null && grep -q silverblue /etc/os-release 2>/dev/null; then
-  alias d='podman'
-  alias dps='podman ps'
-  alias dcu='podman-compose up'
-  alias dcd='podman-compose down'
-else
-  alias d='docker'
-  alias dps='docker ps'
-  alias dcu='docker compose up'
-  alias dcd='docker compose down'
-fi
+# Docker aliases (macOS uses Docker Desktop)
+alias d='docker'
+alias dps='docker ps'
+alias dcu='docker compose up'
+alias dcd='docker compose down'
 
 # Navigation
 alias ..='cd ..'
@@ -58,8 +52,7 @@ alias ~='cd ~'
 alias k='kubectl'
 alias python='python3'
 alias pip='pip3'
-alias serve='python3 -m http.server 8000'
-alias ports='ss -tulpn'
+alias ports='lsof -i' # macOS specific tooling
 alias grep='grep --color=auto'
 
 alias cls='clear && printf "\e[3J"'
@@ -72,14 +65,6 @@ alias zdev='zellij --layout dev'
 alias zmon='zellij --layout monitoring'
 alias zrust='zellij --layout rust'
 alias zai='zellij --layout ai-dev'
-
-# Power user tool aliases
-alias top='btop'
-alias du='dust'
-alias ps='procs'
-alias sed='sd'
-alias curl='xh'
-alias http='xh'
 
 # Just command runner aliases
 alias j='just'
@@ -110,3 +95,14 @@ alias analyze='dv'
 alias datastat='dstats'
 alias datafind='dfind'
 alias datacheck='dcheck'
+
+# macOS-specific utilities
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
+alias flushdns='sudo dscacheutil -flushcache'
+alias ql='qlmanage -p'
+alias macosversion='sw_vers -productVersion'
+
+# Homebrew maintenance
+alias brewup='brew update && brew upgrade && brew cleanup'
+alias brewdeps='brew deps --tree --installed'

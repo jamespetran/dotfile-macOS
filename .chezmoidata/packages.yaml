@@ -58,12 +58,17 @@ packages:
     - broot
     # Task runner
     - just
-    # Runtime manager
+    # Runtime manager NODE & PYTHON
     - mise
+    # Python package manager
+    - uv
     # Essential performance tools (not everything)
     - hyperfine
     - tokei
-    # Infrastructure & DevOps (2025 Focus)
+    # Container runtime (lightweight Docker for macOS)
+    - colima
+    - docker
+    # Infrastructure & DevOps
     - terraform
     - tflint
     - terraform-docs

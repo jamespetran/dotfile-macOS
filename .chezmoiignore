@@ -1,2 +1,12 @@
 .cache/
 private_dot_ssh/*
+*.md
+latest_error.md
+test-*.sh
+TROUBLESHOOTING.md
+USAGE.md
+PHASE*.md
+PHILOSOPHY-*.md
+chezmoi-audit.sh
+fix-chezmoi-templates.sh
+docs/

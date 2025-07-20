@@ -31,7 +31,7 @@ echo "🔄  Ensuring development packages are installed…"
 if command -v brew >/dev/null 2>&1; then
   # shellcheck disable=SC2046
   # shellcheck disable=SC1091
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  eval "$({{ .homebrewBin }}/brew shellenv)"
   
   run_with_spinner "brew update" brew update
   run_with_spinner "brew install packages" brew upgrade --formula {{ .packages.brew | join " " }} || true

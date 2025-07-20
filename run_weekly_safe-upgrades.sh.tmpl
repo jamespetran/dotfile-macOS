@@ -24,7 +24,7 @@ run_with_spinner() {
 
 # Safe CLI tool upgrades
 if command -v brew >/dev/null 2>&1; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  eval "$({{ .homebrewBin }}/brew shellenv)"
   
   run_with_spinner "brew update" brew update
   

@@ -85,8 +85,12 @@ The `cz` command is a wrapper function that automatically unlocks Bitwarden when
 
 ### Installation Architecture
 
+# THIS IS OUT OF DATE. THERE IS ONLY ONE MODE. THIS IS ONLY MAC OS. NO LINUX. NO PODMAN.
+
+README.MD IS MORE UP TO DATE
+
 #### Minimal Mode (4 layers)
-1. **OS packages** - Essential system utilities (git, curl, zsh, podman)
+1. **OS packages** - Essential system utilities (git, curl, zsh, docker)
 2. **Homebrew** - Modern CLI tools (ripgrep, bat, fzf, etc.)
 3. **Shell framework** - Oh My Zsh with plugins and Powerlevel10k theme
 4. **Configuration** - Tool-specific configs and aliases
@@ -116,7 +120,7 @@ The `cz` command is a wrapper function that automatically unlocks Bitwarden when
 - Modern CLI alternatives: `bat`, `fd`, `ripgrep`, `zoxide`
 - Git tools: `git-delta`, `lazygit`, `gh` (GitHub CLI)  
 - Terminal multiplexer: `zellij`
-- Container tools: `podman` (with Docker aliases)
+- Container tools: `docker`
 - File navigation: `broot`, `fzf`
 - Data processing: `jq`, `yq`
 - Monitoring: `btop`, `htop`
@@ -219,7 +223,7 @@ Located in `devcontainer-templates/` directory:
 #### Minimal Mode Validation
 ```bash
 # Essential tools (should be present)
-which git curl zsh podman || echo "Essential tools missing"
+which git curl zsh docker || echo "Essential tools missing"
 which rg bat fzf fd || echo "CLI tools missing" 
 which lazygit gh zellij atuin broot || echo "Dev tools missing"
 
@@ -227,7 +231,7 @@ which lazygit gh zellij atuin broot || echo "Dev tools missing"
 which python3 node cargo && echo "⚠️ Language runtimes on host (should be in containers)"
 
 # Container runtime
-podman --version && echo "✅ Container runtime available"
+docker --version && echo "✅ Container runtime available"
 ```
 
 #### Full Mode Validation  
@@ -295,8 +299,8 @@ zsh -c 'time zsh -i -c exit'               # Shell startup time
 #### Minimal Mode Specific
 ```bash
 # Container runtime
-podman ps -a                                # Check containers
-podman system info                          # System status
+docker ps -a                                # Check containers
+docker system info                          # System status
 
 # Dev container issues
 cat devcontainer-templates/README.md        # Usage instructions
@@ -317,7 +321,7 @@ poetry --version                           # Poetry status
 
 #### Minimal Mode
 1. **Missing language tools**: Install in dev container, not on host
-2. **Container not starting**: Check podman status and permissions
+2. **Container not starting**: Check docker daemon status and permissions
 3. **IntelliJ can't find tools**: Use dev container integration
 4. **Shell startup prompts**: Verify `bw status` and vault items
 

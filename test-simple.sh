@@ -24,7 +24,7 @@ for tool in rg bat fzf fd lazygit gh zellij atuin broot jq yq; do
 done
 
 # Test 2b: Infrastructure & DevOps tools (2025 focus)
-echo -e "\nTesting Infrastructure & DevOps tools (2025 focus)..."
+echo -e "\nTesting Infrastructure & DevOps tools"
 for tool in terraform tflint terraform-docs terragrunt infracost tenv checkov trivy; do
     if command -v "$tool" >/dev/null 2>&1; then
         echo "  ✅ $tool: $(which "$tool")"

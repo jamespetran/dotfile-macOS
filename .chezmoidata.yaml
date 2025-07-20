@@ -1,0 +1,18 @@
+# macOS configuration data for chezmoi templates
+
+# Homebrew configuration
+homebrewPrefix: /opt/homebrew
+homebrewBin: /opt/homebrew/bin
+
+# Rust configuration
+rust:
+  cargoHome: "$HOME/.cargo"
+  enableSccache: true
+  cargoAliases:
+    cb: "cargo build"
+    cr: "cargo run"
+    ct: "cargo test"
+    cc: "cargo check"
+    cw: "cargo watch"
+    cn: "cargo nextest run"
+

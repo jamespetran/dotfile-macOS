@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Safe weekly upgrades for minimal base system.
+# Only upgrades tools that are unlikely to break workflows.
+
+set -euo pipefail
+
+echo "🔄 Running safe weekly upgrades for minimal base system..."
+
+# Helper function
+run_with_spinner() {
+  local msg="$1"; shift
+  local pid spin='-\|/'
+  echo -ne "${msg} … "
+  "$@" &>/tmp/spinner.log & pid=$!
+  local i=0
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r%s %s" "${msg}" "${spin:i++%${#spin}:1}"
+    sleep 0.15
+  done
+  wait "$pid" && echo -e "\r${msg} … ✅" || {
+    echo -e "\r${msg} … ❌  (details below)"; tail -40 /tmp/spinner.log; exit 1; }
+}
+
+# Safe CLI tool upgrades
+if command -v brew >/dev/null 2>&1; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  
+  run_with_spinner "brew update" brew update
+  
+  # Only upgrade safe, stable CLI tools
+  SAFE_TOOLS="fzf fd ripgrep bat git-delta jq yq tldr atuin"
+  run_with_spinner "Upgrade safe CLI tools" brew upgrade $SAFE_TOOLS || true
+fi
+
+# Update shell plugins
+ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}
+if [ -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+  run_with_spinner "Update zsh-autosuggestions" git -C "$ZSH_CUSTOM/plugins/zsh-autosuggestions" pull
+fi
+
+if [ -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
+  run_with_spinner "Update zsh-syntax-highlighting" git -C "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" pull  
+fi
+
+if [ -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
+  run_with_spinner "Update Powerlevel10k theme" git -C "$ZSH_CUSTOM/themes/powerlevel10k" pull
+fi
+
+echo "✅ Safe upgrades complete!"
+echo "💡 Manual upgrade needed for: zellij, lazygit, gh, broot"
+echo "🐳 Language runtimes upgrade in dev containers only"

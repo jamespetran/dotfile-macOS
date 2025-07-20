@@ -38,6 +38,19 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 ############################################
+# Install Cargo packages
+############################################
+{{- if .packages.cargo }}
+if command -v cargo >/dev/null 2>&1; then
+  {{- range .packages.cargo }}
+  if ! cargo install --list | grep -q "^{{ . }} "; then
+    run_with_spinner "cargo install {{ . }}" cargo install {{ . }}
+  fi
+  {{- end }}
+fi
+{{- end }}
+
+############################################
 # Update Zsh plugins (git pull)
 ############################################
 ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}

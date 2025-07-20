@@ -17,11 +17,8 @@ _send_notification() {
         return 0
     fi
     
-    # Linux notification
-    if command -v notify-send >/dev/null 2>&1; then
-        notify-send -u "$urgency" "$title" "$message" 2>/dev/null
     # macOS notification
-    elif command -v osascript >/dev/null 2>&1; then
+    if command -v osascript >/dev/null 2>&1; then
         osascript -e "display notification \"$message\" with title \"$title\"" 2>/dev/null
     fi
 }

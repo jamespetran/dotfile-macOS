@@ -148,8 +148,8 @@ export RUST_BACKTRACE=1
 export MAKEFLAGS="-j$(nproc)"
 export CMAKE_BUILD_PARALLEL_LEVEL="$(nproc)"
 
-# Faster linking with lld
-export RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+# Use native CPU optimizations for Rust
+export RUSTFLAGS="-C target-cpu=native"
 
 # Load dataset analysis tools
 [[ -f ~/.config/zsh/dataset-tools.zsh ]] && source ~/.config/zsh/dataset-tools.zsh

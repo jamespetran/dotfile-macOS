@@ -143,21 +143,12 @@ rust_release_build() {
 }
 
 
-# Platform-specific Rust configuration
-{{- if eq .chezmoi.os "darwin" }}
-# macOS-specific Rust settings
+# macOS Rust configuration
 export CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER="clang"
 export CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER="clang"
 
 # Use native CPU features for better performance
 export RUSTFLAGS="-C target-cpu=native"
-{{- else if eq .chezmoi.os "linux" }}
-# Linux-specific Rust settings
-# Use lld linker for faster linking if available
-if command -v lld &>/dev/null; then
-  export RUSTFLAGS="-C link-arg=-fuse-ld=lld"
-fi
-{{- end }}
 
 # Rust development tips
 rust_tips() {

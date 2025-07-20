@@ -76,6 +76,10 @@ packages:
     - tenv
     - checkov
     - trivy
+  cargo:
+    # Rust development tools
+    - cargo-llvm-cov
+    - cargo-nextest
   apt:
     # Core system utilities
     - build-essential

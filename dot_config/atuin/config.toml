@@ -1,5 +1,4 @@
 ## where to store your database, default is your system data directory
-## linux: ~/.local/share/atuin/history.db
 ## macOS: ~/Library/Application Support/atuin/history.db
 # db_path = "~/.history.db"
 

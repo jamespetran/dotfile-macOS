@@ -1,88 +1,117 @@
 # Container Runtime Integration for macOS
-# Docker Desktop configuration
+# Colima (lightweight Docker) configuration
 
-# macOS - Using Docker Desktop
+# macOS - Using Colima + Docker CLI
 export CONTAINER_RUNTIME="docker"
 export COMPOSE_COMMAND="docker compose"
 
-# Docker Desktop specific settings
+# Docker settings
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
-# Check if Docker Desktop is running
+# Colima auto-recovery settings
+export COLIMA_AUTO_START=true
+export COLIMA_RECOVERY_TIMEOUT=30
+
+# Check if Colima/Docker is running
 docker_status() {
-  if command -v docker &>/dev/null && docker info &>/dev/null; then
-    echo "Docker Desktop is running"
+  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    echo "Docker (via Colima) is running"
     return 0
   else
-    echo "Docker Desktop is not running"
+    echo "Docker (via Colima) is not running"
     return 1
   fi
 }
 
-# Start Docker Desktop on macOS
+# Auto-start Colima with recovery
 docker_start() {
-  if [[ -d "/Applications/Docker.app" ]]; then
-    open -a Docker
-    echo "Starting Docker Desktop..."
-    # Wait for Docker to be ready
-    local count=0
-    while ! docker info &>/dev/null && [ $count -lt 30 ]; do
-      sleep 2
-      count=$((count + 1))
-    done
-    if docker info &>/dev/null; then
-      echo "Docker Desktop is ready"
-    else
-      echo "Docker Desktop failed to start"
-      return 1
-    fi
+  if ! command -v colima &>/dev/null; then
+    echo "Colima not found. Installing via brew..."
+    brew install colima docker
+    return $?
+  fi
+
+  # Check if already running
+  if docker info &>/dev/null 2>&1; then
+    echo "Docker is already running"
+    return 0
+  fi
+
+  echo "Starting Colima..."
+  
+  # Start with optimized settings for development
+  if ! colima start --cpu 4 --memory 8 --disk 100 --vm-type vz --vz-rosetta --network-address --dns 1.1.1.1,8.8.8.8 2>/dev/null; then
+    echo "Failed to start Colima with VZ, trying QEMU..."
+    colima start --cpu 4 --memory 8 --disk 100 --vm-type qemu --network-address --dns 1.1.1.1,8.8.8.8
+  fi
+
+  # Wait for Docker to be ready with timeout
+  local count=0
+  while ! docker info &>/dev/null && [ $count -lt $COLIMA_RECOVERY_TIMEOUT ]; do
+    sleep 2
+    count=$((count + 1))
+    echo -n "."
+  done
+  echo ""
+
+  if docker info &>/dev/null; then
+    echo "Docker (via Colima) is ready"
+    return 0
   else
-    echo "Docker Desktop not found. Please install from https://www.docker.com/products/docker-desktop"
+    echo "Docker (via Colima) failed to start within ${COLIMA_RECOVERY_TIMEOUT}s"
     return 1
   fi
 }
 
-# Universal container functions
+# Auto-recovery function (called by container commands)
+docker_ensure_running() {
+  if ! docker info &>/dev/null 2>&1; then
+    echo "Docker not responding, attempting auto-recovery..."
+    docker_start
+  fi
+}
+
+# Universal container functions with auto-recovery
 container_run() {
-  $CONTAINER_RUNTIME run "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME run "$@"
 }
 
 container_build() {
-  $CONTAINER_RUNTIME build "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME build "$@"
 }
 
 container_exec() {
-  $CONTAINER_RUNTIME exec "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME exec "$@"
 }
 
 container_ps() {
-  $CONTAINER_RUNTIME ps "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME ps "$@"
 }
 
 container_images() {
-  $CONTAINER_RUNTIME images "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME images "$@"
 }
 
 container_logs() {
-  $CONTAINER_RUNTIME logs "$@"
+  docker_ensure_running && $CONTAINER_RUNTIME logs "$@"
 }
 
-# Compose shortcuts
+# Compose shortcuts with auto-recovery
 compose_up() {
-  $COMPOSE_COMMAND up "$@"
+  docker_ensure_running && $COMPOSE_COMMAND up "$@"
 }
 
 compose_down() {
-  $COMPOSE_COMMAND down "$@"
+  docker_ensure_running && $COMPOSE_COMMAND down "$@"
 }
 
 compose_build() {
-  $COMPOSE_COMMAND build "$@"
+  docker_ensure_running && $COMPOSE_COMMAND build "$@"
 }
 
 compose_logs() {
-  $COMPOSE_COMMAND logs "$@"
+  docker_ensure_running && $COMPOSE_COMMAND logs "$@"
 }
 
 # Development container helpers
@@ -142,15 +171,22 @@ alias devrun="container_dev_run"
 
 # macOS container tips
 container_tips() {
-  echo "Docker Desktop Tips for macOS:"
+  echo "Colima Docker Tips for macOS:"
   echo ""
-  echo "• Docker Desktop manages the Docker daemon automatically"
-  echo "• Use 'docker_start' to launch Docker Desktop from terminal"
-  echo "• Resource limits can be configured in Docker Desktop preferences"
-  echo "• Docker Desktop includes Kubernetes (can be enabled in settings)"
+  echo "• Colima provides lightweight Docker without Docker Desktop"
+  echo "• Auto-starts when you use any container command"
+  echo "• Use 'docker_start' to manually start Colima"
+  echo "• Use 'colima stop' to stop the VM"
+  echo "• Resource limits: 4 CPU, 8GB RAM, 100GB disk"
   echo ""
   echo "Useful commands:"
-  echo "• container_run, container_build, container_exec"
-  echo "• compose_up, compose_down, compose_build"
+  echo "• container_run, container_build, container_exec (with auto-recovery)"
+  echo "• compose_up, compose_down, compose_build (with auto-recovery)"
   echo "• container_dev_build, container_dev_run"
+  echo "• dhealth - check container runtime status"
+  echo ""
+  echo "Aliases:"
+  echo "• d=docker, dc=docker compose, dps=docker ps"
+  echo "• dlogs=docker logs, dexec=docker exec -it"
+  echo "• dprune=cleanup, devbuild/devrun=dev containers"
 }

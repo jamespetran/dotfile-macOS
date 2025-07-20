@@ -104,24 +104,8 @@ rust_new() {
       echo "Created library project: $name"
       ;;
     workspace)
-      mkdir "$name"
-      cd "$name"
-      cat > Cargo.toml << 'EOF'
-[workspace]
-members = []
-resolver = "2"
-
-[workspace.package]
-authors = ["Your Name <your.email@example.com>"]
-edition = "2021"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/yourusername/${name}"
-
-[workspace.dependencies]
-# Add shared dependencies here
-EOF
-      echo "Created workspace: $name"
-      echo "Add members to Cargo.toml to include crates"
+      echo "Use 'cargo new --name $name' and create workspace manually"
+      return 1
       ;;
     *)
       echo "Unknown template: $template"

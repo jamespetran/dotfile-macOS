@@ -37,7 +37,7 @@ _docker_info() { _docker_log 1 "$@"; }
 
 # Check if Colima is running
 _docker_is_running() {
-    docker info >/dev/null 2>&1
+    command docker info >/dev/null 2>&1
 }
 
 # Check if there are active containers
@@ -47,7 +47,7 @@ _docker_has_active_containers() {
     fi
     
     local running_count
-    running_count=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')
+    running_count=$(command docker ps -q 2>/dev/null | wc -l | tr -d ' ')
     [[ $running_count -gt 0 ]]
 }
 
@@ -171,7 +171,7 @@ _docker_schedule_cleanup() {
                 # Optional aggressive cleanup
                 if [[ "$DOCKER_CLEANUP_AGGRESSIVE" == "true" ]]; then
                     _docker_debug "Performing aggressive cleanup"
-                    docker system prune -f >/dev/null 2>&1 || true
+                    command docker system prune -f >/dev/null 2>&1 || true
                 fi
                 
                 _docker_stop_colima
@@ -275,7 +275,7 @@ docker-smart-status() {
     if _docker_is_running; then
         echo "  Colima status: Running"
         local container_count
-        container_count=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')
+        container_count=$(command docker ps -q 2>/dev/null | wc -l | tr -d ' ')
         echo "  Running containers: $container_count"
         
         local seconds_idle
